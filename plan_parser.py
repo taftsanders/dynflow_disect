@@ -1,14 +1,17 @@
 from bs4 import BeautifulSoup
 
-def init(html):
-    with open(html) as task:
+def init(html_file):
+    with open(html_file) as task:
         global soup
         soup = BeautifulSoup(task, 'html.parser')
 
-def get_planned_methods(html):
-    init(html)
+def get_all_methods(html_file):
     methods = soup.body.find_all('ul')
     return methods
+
+def get_method(html_file, index):
+    method = soup.body.find_all('ul')[index]
+    return method
 
 def get_method_label(method):
     label = method.span.contents[0]
@@ -86,27 +89,26 @@ def get_yaml_services_checked(yaml):
 
 def main(html_file):
     plan = []
-    start_index = 1
-    while start_index <= len(get_planned_methods(html_file)):
+    start_index = 2
+    init(html_file)
+    while start_index <= len(get_all_methods(html_file)):
         method_dict = {}
-        if get_planned_methods(html_file)[start_index].span.text == '#':
-            continue
+        method = get_method(html_file, start_index)
+        method_dict['label'] = get_method_label(method)
+        method_dict['started_at'] = get_started_at(method)
+        method_dict['ended_at'] = get_ended_at(method)
+        method_dict['duration'] = get_duration(method)
+        method_dict['current_timezone'] = get_yaml_current_timezone(method)
+        method_dict['current_user_id'] = get_yaml_current_user_id(method)
+        if 'smart_proxy:' in get_yaml(method):
+            method_dict['smart_proxy'] = get_yaml_smart_proxy(method)
+            method_dict['services_checked'] = get_yaml_services_checked(method)
         else:
-            method_dict['label']=get_method_label(html_file)
-            method_dict['started_at']=get_started_at(html_file)
-            method_dict['ended_at']=get_ended_at(html_file)
-            method_dict['duration']=get_duration(html_file)
-            method_dict['current_timezone']=get_yaml_current_timezone(html_file)
-            method_dict['current_user_id']=get_yaml_current_user_id(html_file)
-            if 'smart_proxy:' in get_yaml(html_file):
-                method_dict['smart_proxy']=get_yaml_smart_proxy(html_file)
-                method_dict['services_checked']=get_yaml_services_checked(html_file)
-            else:
-                method_dict['capsule_id']=get_yaml_capsule_id(html_file)
-                method_dict['repo_pulp_id']=get_yaml_repo_pulp_id(html_file)
-                method_dict['sync_options']=get_yaml_sync_options(html_file)
-                method_dict['remote_user']=get_yaml_remote_user(html_file)
-                method_dict['remote_cp_user']=get_yaml_remote_cp_user(html_file)
+            method_dict['capsule_id'] = get_yaml_capsule_id(method)
+            method_dict['repo_pulp_id'] = get_yaml_repo_pulp_id(method)
+            method_dict['sync_options'] = get_yaml_sync_options(method)
+            method_dict['remote_user'] = get_yaml_remote_user(method)
+            method_dict['remote_cp_user'] = get_yaml_remote_cp_user(method)
         plan.append(method_dict)
         start_index +=1
     return plan
