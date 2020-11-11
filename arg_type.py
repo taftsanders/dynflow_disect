@@ -1,6 +1,7 @@
 import magic
 import os
 import plan_parser
+import task_parser
 import sys
 from open_file import open_file
 
@@ -17,8 +18,10 @@ def arg_type(argv):
             for html_file in files:
                 if html_file[:-5] == '.html':
                     print('parsing ' + html_file)
+                    #call task parcer
+                    task = task_parser.main(html_file)
                     #call plan_parser here
-                    plan_parser.init(html_file)
+                    plan = plan_parser.main(html_file)
                     #call run_parser here
                     #call finalize_parser here
                 else:
