@@ -168,6 +168,8 @@ def get_pt_spawned_tasks(pulp_task):
     return spawned_tasks
 
 def get_pt_progress_report(pulp_task):
+    global progress_report
+    progress_report = {}
     progress_report = pulp_task.get('progress_report')
     return progress_report
 
@@ -299,9 +301,11 @@ def main(html_file):
                     method_dict['namespace'] = get_pt_namespace(element)
                     method_dict['start_time'] = get_pt_start_time(element)
                     method_dict['traceback'] = get_pt_traceback(element)
-                    for element in get_pt_spawned_tasks(element):
-                        method_dict['spawned_task:href'] = get_pt_spawned_tasks(element).get('_href')
-                        method_dict['spawned_task:task_id'] = get_pt_spawned_tasks(element).get('task_id')
+                    for spawn in get_pt_spawned_tasks(element):
+                        method_dict['spawned_task:href'] = get_pt_spawned_tasks(spawn).get('_href')
+                        method_dict['spawned_task:task_id'] = get_pt_spawned_tasks(spawn).get('task_id')
+                    
+
 #This for loop will require some serious inception and time, for another night
 #    'progress_report': {'yum_importer': {'content': {'items_total': 0,
 #        'state': 'FINISHED',
