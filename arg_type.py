@@ -27,23 +27,18 @@ def arg_type(argv):
                 print('parsing ' + html_file)
                 #call task parcer
                 task = task_parser.main(html_file)
-                each_task.append('TASKXYZ') #debug
                 each_task.append(task)
                 #call plan_parser here
                 plan = plan_parser.main(html_file)
-                each_task.append('PLANXYZ') #debug
                 each_task.append(plan)
                 #call run_parser here
                 run = run_parser.main(html_file)
-                each_task.append('RUNXYZ') #debug
                 each_task.append(run)
                 #call finalize_parser here
                 finalize = finalize_parser.main(html_file)
-                each_task.append('FINALIZEXYZ') #debug
                 each_task.append(finalize)
                 #call execution_history_parser here
                 execution = execution_history_parser.main(html_file)
-                each_task.append('EXEXYZ') #debug
                 each_task.append(execution)
                 print('Writing '+html_file+' results to /tmp/disect_results.csv')
                 with open('/tmp/disect_results.csv', 'w') as csvfile:
