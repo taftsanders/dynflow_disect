@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import yaml
+import yaml_poll_attempts
+import yaml_pulp_tasks
 
 def init(html_file):
     with open(html_file) as task:
