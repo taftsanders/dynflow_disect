@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import plan_parser
 import yaml
 import yaml_pulp_tasks
 import yaml_poll_attempts
@@ -32,8 +31,25 @@ def get_run_actions():
 def get_queue(action):
     queue = {}
     for value in action.values():
-        queue['queue'] = value
+        queue['queue'] = value.find_all('p')[0].text.split()[1]
     return queue
+
+def get_label(action):
+    label = {}
+    for key in action.keys():
+        label['label'] = key
+    return label
+
+def get_started_at(action):
+    started_at = {}
+    for value in action.values():
+        started_at['started_at'] = value.find_all('p')[1].contents[1].strip()
+    return started_at
+
+def get_ended_at(action):
+    ended_at = {}
+    for value in action.values():
+        ended_at['ended_at'] = value.find_all('p')[2].contents[1].strip()
 
 def get_real_time(action):
     real_time = {}
@@ -63,10 +79,10 @@ def main(html_file):
     init(html_file)
     run_actions = []
     for action in get_run_actions():
-        run_actions.append(plan_parser.get_label(action))
+        run_actions.append(get_label(action))
         run_actions.append(get_queue(action))
-        run_actions.append(plan_parser.get_started_at(action))
-        run_actions.append(plan_parser.get_ended_at(action))
+        run_actions.append(get_started_at(action))
+        run_actions.append(get_ended_at(action))
         run_actions.append(get_real_time(action))
         run_actions.append(get_exe_time(action))
         for key,value in get_input(action).items():
