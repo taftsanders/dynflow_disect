@@ -50,13 +50,13 @@ def get_exe_time(action):
 def get_input(action):
     action_input = {}
     for value in action.values():
-        action_input = yaml.load(value.find_all('p')[5].pre.text)
+        action_input = yaml.load(value.find_all('p')[5].pre.text, yaml.Loader)
     return action_input
 
 def get_output(action):
     action_output = {}
     for value in action.values():
-        action_output = yaml.load(value.find_all('p')[6].pre.text)
+        action_output = yaml.load(value.find_all('p')[6].pre.text, yaml.Loader)
     return action_output
 
 def main(html_file):
@@ -69,7 +69,7 @@ def main(html_file):
         run_actions.append(plan_parser.get_ended_at(action))
         run_actions.append(get_real_time(action))
         run_actions.append(get_exe_time(action))
-        for key,value in get_input(action):
+        for key,value in get_input(action).items():
             if isinstance(value,dict): 
                 some_dict = {}
                 for key2,value2 in value.items():

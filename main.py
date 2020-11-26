@@ -37,10 +37,10 @@ def main():
     menu_screen()
 
 if __name__ == "__main__":
-    print('calling as script')
+    print('calling as script...')
     parser = argparse.ArgumentParser()
-    parser.add_argument('argument', type=str)
+    parser.add_argument("file")
     args = parser.parse_args()
     #Determine arg type and handle it
-    arg_type(args)
+    arg_type(args.file)
     

@@ -46,7 +46,7 @@ def get_ended_at(action):
 def get_input(action):
     action_input = {}
     for value in action.values():
-        action_input = yaml.load(value.find_all('p')[2].pre.text)
+        action_input = yaml.load(value.find_all('p')[2].pre.text, yaml.Loader)
     return action_input
 
 def main(html_file):
@@ -56,7 +56,7 @@ def main(html_file):
         plan_actions.append(get_label(action))
         plan_actions.append(get_started_at(action))
         plan_actions.append(get_ended_at(action))
-        for key,value in get_input(action):
+        for key,value in get_input(action).items():
             if isinstance(value,dict): 
                 some_dict = {}
                 for key2,value2 in value.items():
