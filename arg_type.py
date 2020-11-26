@@ -3,6 +3,7 @@ import os
 import plan_parser
 import task_parser
 import run_parser
+import finalize_parser
 import sys
 from open_file import open_file
 
@@ -26,6 +27,7 @@ def arg_type(argv):
                     #call run_parser here
                     run = run_parser.main(html_file)
                     #call finalize_parser here
+                    finalize = finalize_parser.main(html_file)
                 else:
                     print(html_file + ' is not html, skipping')
         except:
