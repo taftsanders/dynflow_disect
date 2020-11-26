@@ -88,3 +88,4 @@ def main(html_file):
                 yaml_pulp_tasks.main(value)
             elif key == 'poll_attempts':
                 yaml_poll_attempts.main(value)
+    return run_actions
