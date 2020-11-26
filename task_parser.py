@@ -31,11 +31,11 @@ def get_task_ended_at():
 
 def main(html_file):
     init(html_file)
-    task = {}
-    task['id'] = get_task_id()
-    task['label'] = get_task_label()
-    task['status'] = get_task_status()
-    task['result'] = get_task_result()
-    task['started_at'] = get_task_started_at()
-    task['ended_at'] = get_task_ended_at()
+    task = []
+    task.append({'task.id': get_task_id()})
+    task.append({'task.label': get_task_label()})
+    task.append({'task.status': get_task_status()})
+    task.append({'task.result': get_task_result()})
+    task.append({'task.started_at': get_task_started_at()})
+    task.append({'task.ended_at': get_task_ended_at()})
     return task
