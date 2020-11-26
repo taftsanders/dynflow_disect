@@ -8,4 +8,7 @@ def init(html_file):
 
 def main(html_file):
     init(html_file)
-    return soup.find(id="finalize").find_all("div")
+    if soup.find(id="finalize").find("table",{"class":"flow squence"}) == None:
+        return 'None'
+    else:
+        return soup.find(id="finalize").find("table",{"class":"flow squence"})
