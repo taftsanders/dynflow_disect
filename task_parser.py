@@ -1,4 +1,22 @@
 from bs4 import BeautifulSoup
+import db_editor as db
+
+create_table_sql = '''CREATE TABLE IF NOT EXISTS tasks(
+                                id text,
+                                label text,
+                                status text,
+                                result text,
+                                started_at text,
+                                ended_at text);'''
+
+insert_table_data = '''INSERT INTO tasks(
+                                    id,
+                                    label,
+                                    status,
+                                    result,
+                                    started_at,
+                                    ended_at)
+                                    VALUES (?,?,?,?,?,?);'''
 
 def init(argv):
     with open(argv) as task:
@@ -31,11 +49,16 @@ def get_task_ended_at():
 
 def main(html_file):
     init(html_file)
-    task = []
-    task.append({'task.id': get_task_id()})
-    task.append({'task.label': get_task_label()})
-    task.append({'task.status': get_task_status()})
-    task.append({'task.result': get_task_result()})
-    task.append({'task.started_at': get_task_started_at()})
-    task.append({'task.ended_at': get_task_ended_at()})
-    return task
+    task_id = html_file[:-5]
+    task_metadata = ( get_task_id(),
+                                    get_task_label(),
+                                    get_task_status(),
+                                    get_task_result(),
+                                    get_task_started_at(),
+                                    get_task_ended_at())
+    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    db.create_table(conn, create_table_sql)
+    cur = conn.cursor()
+    cur.execute(insert_table_data, task_metadata)
+    conn.commit()
+    return get_task_id()

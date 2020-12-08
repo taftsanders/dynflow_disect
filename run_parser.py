@@ -2,6 +2,30 @@ from bs4 import BeautifulSoup
 import yaml
 import yaml_pulp_tasks
 import yaml_poll_attempts
+import db_editor as db
+
+create_table_sql = '''CREATE TABLE IF NOT EXISTS run(
+                                task_id text,
+                                queue text,
+                                label text,
+                                started_at text,
+                                ended_at text,
+                                real_time real,
+                                execution_time real,
+                                input blob,
+                                output blob);'''
+
+insert_table_data = '''INSERT INTO run(
+                                    task_id,
+                                    queue,
+                                    label,
+                                    started_at,
+                                    ended_at,
+                                    real_time,
+                                    execution_time,
+                                    input,
+                                    output)
+                                    VALUES (?,?,?,?,?,?,?,?,?);'''
 
 def init(html_file):
     with open(html_file) as task:
@@ -9,8 +33,8 @@ def init(html_file):
         soup = BeautifulSoup(task, 'html.parser')
 
 #Creates a list of dictionaries
-# key = plan.label
-# value = bs4.element.tag(plan.metadata & plan.input & plan.output)
+# key = run.label
+# value = bs4.element.tag(run.metadata & run.input & run.output)
 def get_run_actions():
     run_list = []
     iterator = 0
@@ -29,79 +53,53 @@ def get_run_actions():
     return run_list
 
 def get_queue(action):
-    queue = {}
     for value in action.values():
-        queue['queue'] = value.find_all('p')[0].text.split()[1]
-    return queue
+        return value.find_all('p')[0].text.split()[1]
 
 def get_label(action):
-    label = {}
     for key in action.keys():
-        label['label'] = key
-    return label
+        return key
 
 def get_started_at(action):
-    started_at = {}
     for value in action.values():
-        started_at['started_at'] = value.find_all('p')[1].contents[1].strip()
-    return started_at
+        return value.find_all('p')[1].contents[1].strip()
 
 def get_ended_at(action):
-    ended_at = {}
     for value in action.values():
-        ended_at['ended_at'] = value.find_all('p')[2].contents[1].strip()
+        return value.find_all('p')[2].contents[1].strip()
 
 def get_real_time(action):
-    real_time = {}
     for value in action.values():
-        real_time['real_time'] = value.find_all('p')[3].text.split()[2].split('.')[0]
-    return real_time
+        return value.find_all('p')[3].text.split()[2].split('.')[0]
 
 def get_exe_time(action):
-    exe_time = {}
     for value in action.values():
-        exe_time['execution_time'] = value.find_all('p')[4].text.split(':')[1].split('.')[0].strip()
-    return exe_time
+        return value.find_all('p')[4].text.split(':')[1].split('.')[0].strip()
 
 def get_input(action):
-    action_input = {}
     for value in action.values():
-        action_input = yaml.load(value.find_all('p')[5].pre.text, yaml.Loader)
-    return action_input
+        return str(yaml.load(value.find_all('p')[5].pre.text, yaml.Loader))
 
 def get_output(action):
-    action_output = {}
     for value in action.values():
-        action_output = yaml.load(value.find_all('p')[6].pre.text, yaml.Loader)
-    return action_output
+        return str(yaml.load(value.find_all('p')[6].pre.text, yaml.Loader))
 
-def main(html_file):
+def main(html_file,task):
     init(html_file)
-    run_actions = []
+    task_id = html_file[:-5]
+    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    db.create_table(conn, create_table_sql)
+    cur = conn.cursor()
     for action in get_run_actions():
-        run_actions.append(get_label(action))
-        run_actions.append(get_queue(action))
-        run_actions.append(get_started_at(action))
-        run_actions.append(get_ended_at(action))
-        run_actions.append(get_real_time(action))
-        run_actions.append(get_exe_time(action))
-        for key,value in get_input(action).items():
-            if isinstance(value,dict): 
-                some_dict = {}
-                for key2,value2 in value.items():
-                    some_dict[key+'.'+key2] = value2
-                run_actions.append(some_dict)
-            elif value is None:
-                some_dict = {}
-                some_dict[key] = 'None'
-                run_actions.append(some_dict)
-            else:
-                some_dict = {}
-                some_dict[key] = value
-                run_actions.append(some_dict)
-        for key,value in get_output(action):
-            if key == 'pulp_tasks':
-                yaml_pulp_tasks.main(value)
-            elif key == 'poll_attempts':
-                yaml_poll_attempts.main(value)
-    return run_actions
+        run_actions = ( task,
+                                    get_queue(action),
+                                    get_label(action),
+                                    get_started_at(action),
+                                    get_ended_at(action),
+                                    get_real_time(action),
+                                    get_exe_time(action),
+                                    get_input(action),
+                                    get_output(action))
+        cur.execute(insert_table_data, run_actions)
+    conn.commit()
+

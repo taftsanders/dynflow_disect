@@ -36,8 +36,8 @@ def get_task_id(pulp_task):
 
 def get_tags(pulp_task):
     tag_list = []
-    tag_list.append({'tag.repo': pulp_task[0]})
-    tag_list.append({'tag.action': pulp_task[1]})
+    tag_list.append({'tag.repo': pulp_task.get('tags')[0]})
+    tag_list.append({'tag.action': pulp_task.get('tags')[1]})
     return tag_list
 
 def get_finish_time(pulp_task):
@@ -49,12 +49,12 @@ def get_start_time(pulp_task):
 
 def main(value):
     pulp_tasks = []
-    for pulp_task in value.get('pulp_tasks'):
+    for pulp_task in value:
         pulp_tasks.append(get_task_id(pulp_task))
         pulp_tasks.append(get_task_type(pulp_task))
         for tag in get_tags(pulp_task):
             pulp_tasks.append(tag)
-        pulp_task.append(get_finish_time(pulp_task))
-        pulp_task.append(get_start_time(pulp_task))
+        pulp_tasks.append(get_finish_time(pulp_task))
+        pulp_tasks.append(get_start_time(pulp_task))
     return pulp_tasks
 

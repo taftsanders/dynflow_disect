@@ -1,7 +1,7 @@
 import magic
 import os
-import csv
 import tarfile
+import shutil
 import plan_parser
 import task_parser
 import run_parser
@@ -14,40 +14,27 @@ def arg_type(argv):
     ftype = magic.from_file(argv,mime=True)
     #If gzip, decompress and drop me in the folder with the html files
     if ftype == 'application/gzip':
-       # try:
         print('detected gzip file')
+        shutil.rmtree('/tmp/disect')
         with tarfile.open(argv, 'r|gz') as tar:
             tar.extractall('/tmp/disect')
         os.chdir('/tmp/disect/tmp/'+os.listdir('/tmp/disect/tmp')[0])
         files = os.listdir()
-        print(files)
         for html_file in files:
-            each_task = []
             if html_file[-5:] == '.html' and html_file != 'index.html':
                 print('parsing ' + html_file)
                 #call task parcer
                 task = task_parser.main(html_file)
-                each_task.append(task)
                 #call plan_parser here
-                plan = plan_parser.main(html_file)
-                each_task.append(plan)
+                plan_parser.main(html_file,task)
                 #call run_parser here
-                run = run_parser.main(html_file)
-                each_task.append(run)
+                run_parser.main(html_file,task)
                 #call finalize_parser here
-                finalize = finalize_parser.main(html_file)
-                each_task.append(finalize)
+                finalize_parser.main(html_file,task)
                 #call execution_history_parser here
-                execution = execution_history_parser.main(html_file)
-                each_task.append(execution)
-                print('Writing '+html_file+' results to /tmp/disect_results.csv')
-                with open('/tmp/disect_results.csv', 'w') as csvfile:
-                    wr = csv.writer(csvfile, lineterminator='\n')
-                    wr.writerow(each_task)
+                execution_history_parser.main(html_file,task)
             else:
                 print(html_file + ' is not html, skipping')
-        #except:
-            #print('exception gzip')
     #If HTML, parse it
     elif ftype == 'text/html':
         try:
@@ -61,3 +48,4 @@ def arg_type(argv):
                 print('detecting URL')
             except:
                 print('exception URL')
+    
