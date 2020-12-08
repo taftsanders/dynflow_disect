@@ -1,12 +1,15 @@
+import db_editor as db
+import execution_history_parser
+import finalize_parser
 import magic
 import os
-import tarfile
-import shutil
+import pandas as pd
 import plan_parser
-import task_parser
 import run_parser
-import finalize_parser
-import execution_history_parser
+import shutil
+import sqlite3
+import tarfile
+import task_parser
 
 
 def arg_type(argv):
@@ -33,6 +36,18 @@ def arg_type(argv):
                 finalize_parser.main(html_file,task)
                 #call execution_history_parser here
                 execution_history_parser.main(html_file,task)
+                conn = db.create_connection('/tmp/disect/'+html_file[:-5]+'.sqlite.db')
+                #breakpoint()
+                db_df = pd.read_sql_query("SELECT * FROM tasks", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_tasks.csv', index=False)
+                db_df = pd.read_sql_query("SELECT * FROM plan", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_plan.csv', index=False)
+                db_df = pd.read_sql_query("SELECT * FROM run", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_run.csv', index=False)
+                db_df = pd.read_sql_query("SELECT * FROM finalize", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_finalize.csv', index=False)
+                db_df = pd.read_sql_query("SELECT * FROM exe_history", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_exe-history.csv', index=False)
             else:
                 print(html_file + ' is not html, skipping')
     #If HTML, parse it

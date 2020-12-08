@@ -56,7 +56,7 @@ def main(html_file):
                                     get_task_result(),
                                     get_task_started_at(),
                                     get_task_ended_at())
-    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    conn = db.create_connection('/tmp/disect/'+task_id+'.sqlite.db')
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     cur.execute(insert_table_data, task_metadata)

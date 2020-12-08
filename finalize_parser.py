@@ -19,7 +19,7 @@ def init(html_file):
 def main(html_file,task):
     init(html_file)
     task_id = html_file[:-5]
-    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    conn = db.create_connection('/tmp/disect/'+task_id+'.sqlite.db')
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     if soup.find(id="finalize").find("table",{"class":"flow squence"}) == None:

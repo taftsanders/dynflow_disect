@@ -1,8 +1,9 @@
 from bs4 import BeautifulSoup
+import db_editor as db
 import yaml
 import yaml_pulp_tasks
 import yaml_poll_attempts
-import db_editor as db
+
 
 create_table_sql = '''CREATE TABLE IF NOT EXISTS run(
                                 task_id text,
@@ -87,7 +88,7 @@ def get_output(action):
 def main(html_file,task):
     init(html_file)
     task_id = html_file[:-5]
-    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    conn = db.create_connection('/tmp/disect/'+task_id+'.sqlite.db')
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     for action in get_run_actions():
