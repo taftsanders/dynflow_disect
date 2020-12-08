@@ -2,6 +2,24 @@ from bs4 import BeautifulSoup
 import yaml
 import yaml_poll_attempts
 import yaml_pulp_tasks
+import uuid
+import db_editor as db
+
+
+create_table_sql = '''CREATE TABLE IF NOT EXISTS plan(
+                                task_id text,
+                                label text,
+                                started_at text,
+                                ended_at text,
+                                input blob);'''
+
+insert_table_data = '''INSERT INTO plan(
+                                    task_id,
+                                    label,
+                                    started_at,
+                                    ended_at,
+                                    input)
+                                    VALUES (?,?,?,?,?);'''
 
 def init(html_file):
     with open(html_file) as task:
@@ -26,49 +44,36 @@ def get_plan_actions():
     return plan_list
 
 def get_label(action):
-    label = {}
     for key in action.keys():
-        label['label'] = key
-    return label
+        return key
 
 def get_started_at(action):
-    started_at = {}
     for value in action.values():
-        started_at['started_at'] = value.find_all('p')[0].contents[1].strip()
-    return started_at
+        return value.find_all('p')[0].contents[1].strip()
 
 def get_ended_at(action):
-    ended_at = {}
     for value in action.values():
-        ended_at['ended_at'] = value.find_all('p')[1].contents[1].strip().split('(')[0].strip()
-    return ended_at
+        return value.find_all('p')[1].contents[1].strip().split('(')[0].strip()
 
 def get_input(action):
-    action_input = {}
     for value in action.values():
-        action_input = yaml.load(value.find_all('p')[2].pre.text, yaml.Loader)
-    return action_input
+        return str(yaml.load(value.find_all('p')[2].pre.text, yaml.Loader))
 
-def main(html_file):
+def gen_uuid():
+    return uuid.uuid4()
+
+def main(html_file,task):
     init(html_file)
-    plan_actions = []
+    task_id = html_file[:-5]
+    conn = db.create_connection('/tmp/disect/dynflow_task_'+task_id+'.sqlite.db')
+    db.create_table(conn, create_table_sql)
+    cur = conn.cursor()
     for action in get_plan_actions():
-        plan_actions.append(get_label(action))
-        plan_actions.append(get_started_at(action))
-        plan_actions.append(get_ended_at(action))
-        for key,value in get_input(action).items():
-            if isinstance(value,dict): 
-                some_dict = {}
-                for key2,value2 in value.items():
-                    some_dict[key+'.'+key2] = value2
-                plan_actions.append(some_dict)
-            elif value is None:
-                some_dict = {}
-                some_dict[key] = 'None'
-                plan_actions.append(some_dict)
-            else:
-                some_dict = {}
-                some_dict[key] = value
-                plan_actions.append(some_dict)
-    return plan_actions
+        plan_actions = ( task,
+                                    get_label(action),
+                                    get_started_at(action),
+                                    get_ended_at(action),
+                                    get_input(action))
+        cur.execute(insert_table_data, plan_actions)
+    conn.commit()
 
