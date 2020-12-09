@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import db_editor as db
+import plan_parser as pp
 import yaml
 import yaml_pulp_tasks
 import yaml_poll_attempts
@@ -81,6 +82,24 @@ def get_input(action):
     for value in action.values():
         return str(yaml.load(value.find_all('p')[5].pre.text, yaml.Loader))
 
+def get_input_environment_id(input_data):
+    try:
+        return input_data['environment_id']
+    except KeyError:
+        return None
+
+def get_input_content_view_id(input_data):
+    try:
+        return input_data['content_view_id']
+    except KeyError:
+        return None
+
+def get_input_repository_id(input_data):
+    try:
+        return input_data['repository_id']
+    except KeyError:
+        return None
+
 def get_output(action):
     for value in action.values():
         return str(yaml.load(value.find_all('p')[6].pre.text, yaml.Loader))
@@ -92,6 +111,8 @@ def main(html_file,task):
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     for action in get_run_actions():
+        input_data = get_input(action)
+        output_data = get_output(action)
         run_actions = ( task,
                                     get_queue(action),
                                     get_label(action),
@@ -99,8 +120,22 @@ def main(html_file,task):
                                     get_ended_at(action),
                                     get_real_time(action),
                                     get_exe_time(action),
+                                    pp.get_input_capsule_id(input_data),
+                                    pp.get_input_sp_id(input_data),
+                                    get_input_environment_id(input_data),
+                                    get_input_content_view_id(input_data),
+                                    get_input_repository_id(input_data),
+                                    pp.get_input_repo_pulp_id(input_data),
+                                    pp.get_input_sync_options(input_data),
+                                    pp.get_input_remote_user(input_data),
+                                    pp.get_input_remote_cp_user(input_data),
+                                    pp.get_input_current_request_id(input_data),
+                                    pp.get_input_current_timezone(input_data),
+                                    pp.get_input_current_user_id(input_data),
+                                    pp.get_input_current_organization_id(input_data),
+                                    pp.get_input_current_location_id(input_data),
                                     get_input(action),
-                                    get_output(action))
+                                    get_output(action,))
         cur.execute(insert_table_data, run_actions)
     conn.commit()
 
