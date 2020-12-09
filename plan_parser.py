@@ -10,6 +10,19 @@ create_table_sql = '''CREATE TABLE IF NOT EXISTS plan(
                                 label text,
                                 started_at text,
                                 ended_at text,
+                                capsule_id integer,
+                                smart_proxy_id integer,
+                                smart_proxy_name text,
+                                services_checked text,
+                                repo_pulp_id text,
+                                sync_options text,
+                                remote_user text,
+                                remote_cp_user text,
+                                current_request_id integer,
+                                current_timezone text,
+                                current_user_id integer,
+                                current_organization_id integer,
+                                current_location_id integer,
                                 input blob);'''
 
 insert_table_data = '''INSERT INTO plan(
@@ -17,8 +30,21 @@ insert_table_data = '''INSERT INTO plan(
                                     label,
                                     started_at,
                                     ended_at,
+                                    capsule_id,
+                                    smart_proxy_id,
+                                    smart_proxy_name,
+                                    services_checked,
+                                    repo_pulp_id,
+                                    sync_options,
+                                    remote_user,
+                                    remote_cp_user,
+                                    current_request_id,
+                                    current_timezone,
+                                    current_user_id,
+                                    current_organization_id,
+                                    current_location_id,
                                     input)
-                                    VALUES (?,?,?,?,?);'''
+                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);'''
 
 def init(html_file):
     with open(html_file) as task:
@@ -56,7 +82,90 @@ def get_ended_at(action):
 
 def get_input(action):
     for value in action.values():
-        return str(yaml.load(value.find_all('p')[2].pre.text, yaml.Loader))
+        return yaml.load(value.find_all('p')[2].pre.text, yaml.Loader)
+
+def get_input_capsule_id(input_data):
+    try:
+        return input_data['capsule_id']
+    except KeyError:
+        return None
+
+def get_input_repo_pulp_id(input_data):
+    try:
+        return input_data['repo_pulp_id']
+    except KeyError:
+        return None
+
+def get_input_sync_options(input_data):
+    try:
+        return str(input_data['sync_options'])
+    except KeyError:
+        return None
+
+def get_input_remote_user(input_data):
+    try:
+        return input_data['remote_user']
+    except KeyError:
+        return None
+
+def get_input_remote_cp_user(input_data):
+    try:
+        return input_data['remote_cp_user']
+    except KeyError:
+        return None
+
+def get_input_current_request_id(input_data):
+    try:
+        return input_data['current_request_id']
+    except KeyError:
+        return None
+
+def get_input_current_timezone(input_data):
+    try:
+        return input_data['current_timezone']
+    except KeyError:
+        return None
+
+def get_input_current_user_id(input_data):
+    try:
+        return input_data['current_user_id']
+    except KeyError:
+        return None
+
+def get_input_current_organization_id(input_data):
+    try:
+        return input_data['current_organization_id']
+    except KeyError:
+        return None
+
+def get_input_current_location_id(input_data):
+    try:
+        return input_data['current_location_id']
+    except KeyError:
+        return None
+
+def get_input_sp_id(input_data):
+    try:
+        return input_data['smart_proxy']['id']
+    except KeyError:
+        pass
+    try:
+        return input_data['smart_proxy_id']
+    except KeyError:
+        return None
+
+def get_input_sp_name(input_data):
+    try:
+        return input_data['smart_proxy']['name']
+    except KeyError:
+        return None
+
+def get_input_svc_checked(input_data):
+    try:
+        return str(input_data['services_checked'])
+    except KeyError:
+        return None
+
 
 def main(html_file,task):
     init(html_file)
@@ -65,11 +174,25 @@ def main(html_file,task):
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     for action in get_plan_actions():
+        input_data = get_input(action)
         plan_actions = ( task,
                                     get_label(action),
                                     get_started_at(action),
                                     get_ended_at(action),
-                                    get_input(action))
+                                    get_input_capsule_id(input_data),
+                                    get_input_sp_id(input_data),
+                                    get_input_sp_name(input_data),
+                                    get_input_svc_checked(input_data),
+                                    get_input_repo_pulp_id(input_data),
+                                    get_input_sync_options(input_data),
+                                    get_input_remote_user(input_data),
+                                    get_input_remote_cp_user(input_data),
+                                    get_input_current_request_id(input_data),
+                                    get_input_current_timezone(input_data),
+                                    get_input_current_user_id(input_data),
+                                    get_input_current_organization_id(input_data),
+                                    get_input_current_location_id(input_data),
+                                    str(input_data))
         cur.execute(insert_table_data, plan_actions)
     conn.commit()
 

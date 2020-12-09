@@ -37,7 +37,6 @@ def arg_type(argv):
                 #call execution_history_parser here
                 execution_history_parser.main(html_file,task)
                 conn = db.create_connection('/tmp/disect/'+html_file[:-5]+'.sqlite.db')
-                #breakpoint()
                 db_df = pd.read_sql_query("SELECT * FROM tasks", conn)
                 db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_tasks.csv', index=False)
                 db_df = pd.read_sql_query("SELECT * FROM plan", conn)
