@@ -47,6 +47,11 @@ def arg_type(argv):
                 db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_finalize.csv', index=False)
                 db_df = pd.read_sql_query("SELECT * FROM exe_history", conn)
                 db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_exe-history.csv', index=False)
+                db_df = pd.read_sql_query("select t.*, e.*, p.*, r.*, f.* from plan as p, run as r, tasks as t, exe_history as e, finalize as f where p.task_id = r.task_id and p.task_id = t.id and p.task_id = e.task_id and p.task_id = f.task_id", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_join_all.csv', index=False)
+                db_df = pd.read_sql_query("select t.*, e.* from tasks as t, exe_history as e where t.id = e.task_id", conn)
+                db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_join_tasks_exehistory.csv', index=False)
+                #join task and execution history in a csv file for Wally
             else:
                 print(html_file + ' is not html, skipping')
     #If HTML, parse it
