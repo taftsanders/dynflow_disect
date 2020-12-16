@@ -2,6 +2,7 @@ import db_editor as db
 import execution_history_parser
 import finalize_parser
 import magic
+import mimetypes
 import os
 import pandas as pd
 import plan_parser
@@ -58,13 +59,34 @@ def arg_type(argv):
     elif ftype == 'text/html':
         try:
             print('detecting html file')
-            #call parser here
+            print('parsing ' + argv)
+            #call task parcer
+            task = task_parser.main(argv)
+            #call plan_parser here
+            plan_parser.main(argv,task)
+            #call run_parser here
+            run_parser.main(argv,task)
+            #call finalize_parser here
+            finalize_parser.main(argv,task)
+            #call execution_history_parser here
+            execution_history_parser.main(argv,task)
+            conn = db.create_connection('/tmp/disect/disect.sqlite.db')
+            db_df = pd.read_sql_query("SELECT * FROM tasks", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_tasks.csv', index=False)
+            db_df = pd.read_sql_query("SELECT * FROM plan", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_plan.csv', index=False)
+            db_df = pd.read_sql_query("SELECT * FROM run", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_run.csv', index=False)
+            db_df = pd.read_sql_query("SELECT * FROM finalize", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_finalize.csv', index=False)
+            db_df = pd.read_sql_query("SELECT * FROM exe_history", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_exe-history.csv', index=False)
+            #db_df = pd.read_sql_query("select t.*, e.*, p.*, r.*, f.* from plan as p, run as r, tasks as t, exe_history as e, finalize as f where p.task_id = r.task_id and p.task_id = t.id and p.task_id = e.task_id and p.task_id = f.task_id", conn)
+            #db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_join_all.csv', index=False)
+            db_df = pd.read_sql_query("select t.*, e.* from tasks as t, exe_history as e where t.id = e.task_id", conn)
+            db_df.to_csv('/tmp/disect/'+html_file[:-5]+'_join_tasks_exehistory.csv', index=False)
         except:
             print('exception html')
-    elif argv is str:
-        if 'http' in argv:
-            try:
-                print('detecting URL')
-            except:
-                print('exception URL')
-    
+    else:
+        print('The file type is %s', mimetypes.guess_extension(argv))
+        print('Please use an dynflow html file, or a non-csv task-export')
