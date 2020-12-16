@@ -936,7 +936,8 @@ Publish:
 def main(html_file,task):
     init(html_file)
     task_id = html_file[:-5]
-    conn = db.create_connection('/tmp/disect/'+task_id+'.sqlite.db')
+    #conn = db.create_connection('/tmp/disect/'+task_id+'.sqlite.db')
+    conn = db.create_connection('/tmp/disect/disect.sqlite.db')
     db.create_table(conn, create_table_sql)
     cur = conn.cursor()
     for action in get_run_actions():
