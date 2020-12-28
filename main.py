@@ -9,4 +9,5 @@ def main():
     #Determine arg type and handle it
     arg_type(args.file)
 
-    
+if __name__ == "__main__":
+    main()
