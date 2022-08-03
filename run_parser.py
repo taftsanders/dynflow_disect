@@ -184,6 +184,7 @@ def get_pulp_task_sync(output_data):
         return None
 
 def get_pulp_task_publish(output_data):
+    import pdb; pdb.set_trace()
     if output_data['pulp_tasks']:
         try:
             sync = get_pulp_tasks(output_data)
